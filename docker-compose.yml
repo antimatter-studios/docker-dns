@@ -5,3 +5,4 @@ services:
     build: .
     image: christhomas/supervisord-dnsmasq:latest
     restart: always
+    network_mode: bridge
