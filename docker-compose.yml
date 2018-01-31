@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  local-dns:
+    build: .
+    image: cthomas/supervisord-dnsmasq:latest
+    restart: always
+    volumes:
+      - ./dnsmasq.conf:/etc/dnsmasq.conf
