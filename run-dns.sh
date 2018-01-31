@@ -25,7 +25,7 @@ fi
 # Now lets configure the DNS server inside the docker container to resolve our project domains
 local_domain=docker.local
 resolve_conf=/etc/resolvconf/resolv.conf.d/head
-container_name="cthomas/supervisord-dnsmasq:latest"
+container_name="christhomas/supervisord-dnsmasq"
 container_id=$(docker ps | grep $container_name | awk '{ print $1 }')
 ipaddress=$(docker inspect -f '{{ range .NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}' $container_id)
 
@@ -33,7 +33,7 @@ echo "Updating DNS Resolver to use container id '$container_id' with ip address 
 echo "Note: If you are asked for your password, it means your sudo password"
 
 # I wanted to use a variable here, but the special characters defeated me :(
-sudo sed -i "/\# CONTAINER\:cthomas\/supervisord-dnsmasq\:latest/d" $resolve_conf
+sudo sed -i "/\# CONTAINER\:christhomas\/supervisord-dnsmasq/d" $resolve_conf
 
 echo "nameserver $ipaddress # CONTAINER:$container_name ip address" | sudo tee -a $resolve_conf
 sudo resolvconf -u
