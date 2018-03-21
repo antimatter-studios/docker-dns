@@ -6,20 +6,28 @@ alias_ip_address=10.254.254.254
 # Some nice text colours
 red=$'\e[1;31m'; grn=$'\e[1;32m'; yel=$'\e[1;33m'; blu=$'\e[1;34m'; mag=$'\e[1;35m'; cyn=$'\e[1;36m'; end=$'\e[0m'
 
-echo "${yel}Running the Local DNSMasq for ${blu}$)Docker / Kubernetes${end}"
+echo "${yel}Running the Local DNSMasq for ${blu}Docker / Kubernetes${end}"
 
 # This DIR variable resolves any problem of referencing this script from another location on the disk
 directory=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
-compose=$directory/docker-compose.yml
+compose=${directory}/docker-compose.yml
 
 echo "Rebooting the docker-compose: ${yel}$compose${end}"
 docker-compose -f $compose stop
-docker-compose -f $compose up -d
 
-container_name="christhomas/supervisord-dnsmasq"
-container_id=$(docker ps | grep "$container_name" | awk '{ print $1 }')
-echo "container name = $container_name"
-echo "container id = $container_id"
+if [[ "$(uname)" = "Darwin" ]]; then
+    docker-compose -f ${compose} up -d local-dns-osx
+elif [[ "$(uname)" = "Linux" ]]; then
+    docker-compose -f ${compose} up -d local-dns-linux
+else
+    echo "Could not support this operating system"
+    exit 1
+fi
+
+get_container_id ()
+{
+    docker ps | grep "christhomas/supervisord-dnsmasq" | awk '{ print $1 }'
+}
 
 linux_ip_alias ()
 {
@@ -40,14 +48,22 @@ linux_add_dns ()
     echo "Updating DNS Resolver to use container id ${yel}'$2'${end} with ip address ${yel}'$1'${end}"
     echo "${blu}Note: If you are asked for your password, it means your sudo password${end}"
 
-    # I wanted to use a variable here, but the special characters defeated me :(
-    sudo sed -i "/\# CONTAINER\:$2 ip address/d" $resolve_conf
+    linux_remove_dns $2
 
     echo "nameserver $1 # CONTAINER:$2 ip address" | sudo tee -a $resolve_conf
     sudo resolvconf -u
 }
 
-linux_remove_mdns ()
+linux_remove_dns ()
+{
+    # Now lets configure the DNS server inside the docker container to resolve our project domains
+    resolve_conf=/etc/resolvconf/resolv.conf.d/head
+
+    # I wanted to use a variable here, but the special characters defeated me :(
+    sudo sed -i "/\# CONTAINER\:$1 ip address/d" $resolve_conf
+}
+
+linux_remove_package_mdns ()
 {
     package="libnss-mdns"
     found=$(dpkg-query -W --showformat='${Status}\n' $package | grep "install ok installed")
@@ -90,7 +106,7 @@ install_domain ()
 }
 
 if [[ "$(uname)" = "Linux" ]]; then
-    linux_remove_mdns
+    linux_remove_package_mdns
 fi
 
 while getopts "a:d:" param; do
@@ -106,6 +122,8 @@ while getopts "a:d:" param; do
             elif [[ "$(uname)" = "Linux" ]]; then
                 echo "${yel}Setup the ${blu}GNU/Linux ${yel}environment${end}"
 
+                container_id=$(get_container_id)
+
                 dns_ip_address=$(docker inspect -f '{{ range .NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}' ${container_id})
 
                 linux_ip_alias ${alias_ip_address}
@@ -114,6 +132,8 @@ while getopts "a:d:" param; do
             ;;
         d)
             domain_name=${OPTARG}
+
+            container_id=$(get_container_id)
 
             install_domain ${container_id} ${alias_ip_address} ${domain_name}
 
