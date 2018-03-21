@@ -16,9 +16,9 @@ echo "Rebooting the docker-compose: ${yel}$compose${end}"
 docker-compose -f $compose stop
 
 if [[ "$(uname)" = "Darwin" ]]; then
-    docker-compose -f ${compose} up -d local-dns-osx
+    docker-compose -f ${compose} up -d --remove-orphans local-dns-osx
 elif [[ "$(uname)" = "Linux" ]]; then
-    docker-compose -f ${compose} up -d local-dns-linux
+    docker-compose -f ${compose} up -d --remove-orphans local-dns-linux
 else
     echo "Could not support this operating system"
     exit 1
