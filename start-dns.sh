@@ -50,7 +50,7 @@ linux_add_dns ()
 
     linux_remove_dns $2
 
-    echo "nameserver $1 # CONTAINER:$2 ip address" | sudo tee -a $resolve_conf
+    echo "nameserver $1 # CONTAINER:dnsmasq ip address" | sudo tee -a $resolve_conf
     sudo resolvconf -u
 }
 
@@ -60,7 +60,7 @@ linux_remove_dns ()
     resolve_conf=/etc/resolvconf/resolv.conf.d/head
 
     # I wanted to use a variable here, but the special characters defeated me :(
-    sudo sed -i "/\# CONTAINER\:$1 ip address/d" $resolve_conf
+    sudo sed -i "/\# CONTAINER\:dnsmasq ip address/d" $resolve_conf
 }
 
 linux_remove_package_mdns ()
