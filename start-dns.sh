@@ -97,7 +97,7 @@ install_domain ()
     if [[ -z $2 ]]; then echo "${red}Must pass the dns ip address as the second parameter${end}"; exit 1; fi
     if [[ -z $3 ]]; then echo "${red}Must pass the domain name as the third parameter${end}"; exit 2; fi
 
-    echo "Installing domain ${yel}'$3'${end} with ip address ${yel}'$2'${end} into dnsmasq configuration in container id ${yel}'$1'${end}git "
+    echo "Installing domain ${yel}'$3'${end} with ip address ${yel}'$2'${end} into dnsmasq configuration in container id ${yel}'$1'${end}"
 
     docker exec -it $1 /bin/sh -c "echo 'address=/$3/$2' > /etc/dnsmasq.d/$3.conf"
     docker exec -it $1 kill -s SIGHUP 1
