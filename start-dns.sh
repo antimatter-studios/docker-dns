@@ -102,7 +102,6 @@ install_domain ()
     echo "Installing domain ${yel}'$3'${end} with ip address ${yel}'$2'${end} into dnsmasq configuration in container id ${yel}'$1'${end}"
 
     docker exec -it $1 /bin/sh -c "echo 'address=/$3/$2' > /etc/dnsmasq.d/$3.conf"
-    docker exec -it $1 /bin/sh -c "ls -la /etc/dnsmasq.d/"
     docker exec -it $1 kill -s SIGHUP 1
 
     sleep 2
