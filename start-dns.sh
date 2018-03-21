@@ -61,6 +61,8 @@ linux_remove_dns ()
 
     # I wanted to use a variable here, but the special characters defeated me :(
     sudo sed -i "/\# CONTAINER\:dnsmasq ip address/d" $resolve_conf
+
+    sudo resolvconf -u
 }
 
 linux_remove_package_mdns ()
@@ -100,6 +102,7 @@ install_domain ()
     echo "Installing domain ${yel}'$3'${end} with ip address ${yel}'$2'${end} into dnsmasq configuration in container id ${yel}'$1'${end}"
 
     docker exec -it $1 /bin/sh -c "echo 'address=/$3/$2' > /etc/dnsmasq.d/$3.conf"
+    docker exec -it $1 /bin/sh -c "ls -la /etc/dnsmasq.d/"
     docker exec -it $1 kill -s SIGHUP 1
 
     sleep 2
