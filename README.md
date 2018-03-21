@@ -12,6 +12,7 @@ To Start:
 
 To Stop:
 - ./stop.sh
+- You need to stop the dns server with this script because it has configured your system with a new dns server, when you want to stop using this software, it has to be unconfigured
 
 Future Ideas:
 - Make it possible to configure multiple ip aliases with multiple domains
