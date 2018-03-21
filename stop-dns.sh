@@ -23,7 +23,9 @@ linux_remove_dns ()
     resolve_conf=/etc/resolvconf/resolv.conf.d/head
 
     # I wanted to use a variable here, but the special characters defeated me :(
-    sudo sed -i "/\# CONTAINER\:$1 ip address/d" $resolve_conf
+    sudo sed -i "/\# CONTAINER\:dnsmasq ip address/d" $resolve_conf
+
+    sudo resolvconf -u
 }
 
 darwin_add_dns ()
