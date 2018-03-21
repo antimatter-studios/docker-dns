@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 # Configuration values
 alias_ip_address=10.254.254.254
@@ -10,7 +9,7 @@ red=$'\e[1;31m'; grn=$'\e[1;32m'; yel=$'\e[1;33m'; blu=$'\e[1;34m'; mag=$'\e[1;3
 echo "${yel}Running the Local DNSMasq for ${blu}$)Docker / Kubernetes${end}"
 
 # This DIR variable resolves any problem of referencing this script from another location on the disk
-directory=$(r=$(readlink -f "$0" 2>/dev/null) && dirname $r) || $(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+directory=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 compose=$directory/docker-compose.yml
 
 echo "Rebooting the docker-compose: ${yel}$compose${end}"
@@ -42,7 +41,7 @@ linux_add_dns ()
     echo "${blu}Note: If you are asked for your password, it means your sudo password${end}"
 
     # I wanted to use a variable here, but the special characters defeated me :(
-    sudo sed -i "/\# CONTAINER\:christhomas\/supervisord-dnsmasq/d" $resolve_conf
+    sudo sed -i "/\# CONTAINER\:$2 ip address/d" $resolve_conf
 
     echo "nameserver $1 # CONTAINER:$2 ip address" | sudo tee -a $resolve_conf
     sudo resolvconf -u
