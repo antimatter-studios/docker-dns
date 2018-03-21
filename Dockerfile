@@ -2,7 +2,7 @@ FROM alpine:latest
 
 MAINTAINER Chris Thomas <chris.alex.thomas@gmail.com>
 
-RUN apk --no-cache add supervisor dnsmasq
+RUN apk --no-cache add supervisor dnsmasq bind-tools
 
 ADD ./config/supervisor.conf /etc/supervisord.conf
 ADD ./config/dnsmasq.conf /etc/dnsmasq.conf
