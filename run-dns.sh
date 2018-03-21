@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 # Configuration values
 alias_ip_address=10.254.254.254
@@ -6,10 +7,10 @@ alias_ip_address=10.254.254.254
 # Some nice text colours
 red=$'\e[1;31m'; grn=$'\e[1;32m'; yel=$'\e[1;33m'; blu=$'\e[1;34m'; mag=$'\e[1;35m'; cyn=$'\e[1;36m'; end=$'\e[0m'
 
-echo "${yel}Running the Local DNSMasq for ${blu}Docker / Kubernetes${end}"
+echo "${yel}Running the Local DNSMasq for ${blu}$)Docker / Kubernetes${end}"
 
 # This DIR variable resolves any problem of referencing this script from another location on the disk
-directory=$(r=$(readlink -f "$0" 2>/dev/null) && dirname $r || cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+directory=$(r=$(readlink -f "$0" 2>/dev/null) && dirname $r) || $(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 compose=$directory/docker-compose.yml
 
 echo "Rebooting the docker-compose: ${yel}$compose${end}"
@@ -18,18 +19,15 @@ docker-compose -f $compose up -d
 
 container_name="christhomas/supervisord-dnsmasq"
 container_id=$(docker ps | grep "$container_name" | awk '{ print $1 }')
-
-if [[ "$(uname)" = "GNU/Linux" ]]; then
-    linux_remove_mdns
-fi
+echo "container name = $container_name"
+echo "container id = $container_id"
 
 linux_ip_alias ()
 {
     if [[ -z $1 ]]; then echo "${red}Must pass the alias ip address as the first parameter${end}"; exit 1; fi
-    if [[ -z $2 ]]; then echo "${red}Must pass the netmask as the second parameter${end}"; exit 2; fi
 
     echo "Adding Loopback Alias IP Address '$1'"
-    sudo ifconfig lo:40 $1 netmask $2 up
+    sudo ifconfig lo:40 $1 netmask 255.255.255.0 up
 }
 
 linux_add_dns ()
@@ -58,7 +56,7 @@ linux_remove_mdns ()
     if [ "$found" != "" ]; then
         echo "The package ${yel}'libnss-mdns'${end} was installed"
         echo "On GNU/Linux systems this must be uninstalled for ${yel}*.local${end} domains to function correctly and as expected"
-        sudo apt-get remove libnss-mdns
+        sudo apt-get remove -y libnss-mdns
     fi
 }
 
@@ -92,6 +90,10 @@ install_domain ()
     sleep 2
 }
 
+if [[ "$(uname)" = "Linux" ]]; then
+    linux_remove_mdns
+fi
+
 while getopts "a:d:" param; do
     case ${param} in
         a)
@@ -102,7 +104,7 @@ while getopts "a:d:" param; do
 
                 darwin_ip_alias ${alias_ip_address}
                 darwin_add_dns ${alias_ip_address}
-            elif [[ "$(uname)" = "GNU/Linux" ]]; then
+            elif [[ "$(uname)" = "Linux" ]]; then
                 echo "${yel}Setup the ${blu}GNU/Linux ${yel}environment${end}"
 
                 dns_ip_address=$(docker inspect -f '{{ range .NetworkSettings.Networks }}{{ .IPAddress }}{{ end }}' ${container_id})

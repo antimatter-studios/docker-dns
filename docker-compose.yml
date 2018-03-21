@@ -6,5 +6,3 @@ services:
     image: christhomas/supervisord-dnsmasq:latest
     restart: always
     network_mode: bridge
-    ports:
-      - 53:53/udp
