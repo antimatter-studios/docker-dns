@@ -8,7 +8,7 @@ Parameters:
 + -d: The domain to configure
 
 To Start:
-- ./start -a 10.254.254.254 -d api.example.local
+- ./start.sh -a 10.254.254.254 -d api.example.local
 
 To Stop:
 - ./stop.sh
