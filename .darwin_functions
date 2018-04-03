@@ -25,6 +25,6 @@ container_remove_dns ()
 
 # Function exports and parameters
 export container_os_name="Apple Mac OS"
-export -f darwin_ip_alias
-export -f darwin_add_dns
-export -f remove_container_dns
+export -f container_ip_alias
+export -f container_add_dns
+export -f container_remove_dns
