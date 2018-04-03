@@ -1,13 +1,7 @@
 version: '2'
 
 services:
-  local-dns-linux:
-    build: .
-    image: christhomas/supervisord-dnsmasq:latest
-    restart: always
-    network_mode: bridge
-
-  local-dns-osx:
+  local-dns:
     build: .
     image: christhomas/supervisord-dnsmasq:latest
     restart: always

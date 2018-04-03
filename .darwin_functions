@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+container_ip_alias ()
+{
+    if [[ -z $1 ]]; then echo "${red}Must pass the alias ip address as the first parameter${end}"; exit 1; fi
+
+    echo "Adding Loopback Alias IP Address: ${yel}'$1'${end}"
+    sudo ifconfig lo0 alias $1
+}
+
+container_add_dns ()
+{
+    if [[ -z $1 ]]; then echo "${red}Must pass the dns ip address as the first parameter${end}"; exit 1; fi
+
+    echo "DNS Servers: ${yel}'$1'${end}"
+    sudo networksetup -setdnsservers 'Wi-Fi' $1
+}
+
+container_remove_dns ()
+{
+    dns_ip_address="8.8.8.8 8.8.4.4"
+    echo "DNS Servers: ${yel}'${dns_ip_address}'${end}"
+    sudo networksetup -setdnsservers 'Wi-Fi' ${dns_ip_address}
+}
+
+# Function exports and parameters
+export container_os_name="Apple Mac OS"
+export -f darwin_ip_alias
+export -f darwin_add_dns
+export -f remove_container_dns
