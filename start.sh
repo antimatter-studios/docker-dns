@@ -46,7 +46,8 @@ while getopts "a:d:" param; do
             echo "${yel}Setup the ${blu}${container_os_name} ${yel}environment${end}"
 
             container_ip_alias ${alias_ip_address}
-            container_add_dns ${alias_ip_address}
+            # NOTE: I found that using the alias ip address does not work on mac, so lets use the localhost ip address instead
+            container_add_dns 127.0.0.1
             ;;
         d)
             domain_name=${OPTARG}
