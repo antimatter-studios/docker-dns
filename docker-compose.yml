@@ -7,4 +7,5 @@ services:
     restart: always
     network_mode: bridge
     ports:
+      - 53:53/tcp
       - 53:53/udp
