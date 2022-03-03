@@ -1,9 +1,9 @@
-version: '2'
+version: '3'
 
 services:
-  local-dns:
+  docker-dns:
     build: .
-    image: christhomas/supervisord-dnsmasq:latest
+    image: antimatter-studios/docker-dns:latest
     restart: always
     network_mode: bridge
     ports:
