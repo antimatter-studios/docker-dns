@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-MAINTAINER Chris Thomas <chris.alex.thomas@gmail.com>
+LABEL MAINTAINER="Chris Thomas <chris.alex.thomas@gmail.com>"
 
 RUN apk --no-cache add supervisor dnsmasq bind-tools
 

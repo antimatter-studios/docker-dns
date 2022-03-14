@@ -21,7 +21,7 @@ docker-compose -f ${compose} up -d --remove-orphans local-dns
 
 get_container_id ()
 {
-    docker ps | grep "christhomas/supervisord-dnsmasq" | awk '{ print $1 }'
+    docker ps | grep "antimatter-studios/docker-dns" | awk '{ print $1 }'
 }
 
 install_domain ()
