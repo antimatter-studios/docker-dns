@@ -31,7 +31,7 @@ jobs:
         uses: crazy-max/ghaction-docker-meta@v2
         with:
           images: |
-            antimatter-studios/docker-dns
+            ghcr.io/antimatter-studios/docker-dns
           tags: |
             type=semver,suffix=-alpine,pattern={{version}}
             type=semver,suffix=-alpine,pattern={{major}}.{{minor}}
