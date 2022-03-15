@@ -4,6 +4,7 @@
 dir=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
 # Configuration values
+image_name="ghcr.io/antimatter-studios/docker-dns"
 alias_ip_address=10.254.254.254
 os=$(uname | awk '{ print tolower($0) }')
 
@@ -12,16 +13,16 @@ source ${dir}/.${os}_functions
 # Some nice text colours
 red=$'\e[1;31m'; grn=$'\e[1;32m'; yel=$'\e[1;33m'; blu=$'\e[1;34m'; mag=$'\e[1;35m'; cyn=$'\e[1;36m'; end=$'\e[0m'
 
-echo "${yel}Running the Local DNSMasq for ${blu}Docker / Kubernetes${end}"
+echo "${blu}Running the Local DNSMasq for ${yel}Docker / Kubernetes${end}"
 compose=${dir}/docker-compose.yml
 
-echo "Rebooting the docker-compose: ${yel}$compose${end}"
-docker-compose -f $compose stop
-docker-compose -f ${compose} up -d --remove-orphans local-dns
+echo "Rebooting the docker-compose: ${yel}${compose}${end}"
+docker-compose -f ${compose} stop
+docker-compose -f ${compose} up -d --remove-orphans docker-dns
 
 get_container_id ()
 {
-    docker ps | grep "antimatter-studios/docker-dns" | awk '{ print $1 }'
+    docker ps | grep ${image_name} | awk '{ print $1 }'
 }
 
 install_domain ()

@@ -3,9 +3,8 @@ version: '3'
 services:
   docker-dns:
     build: .
-    image: antimatter-studios/docker-dns:latest
+    image: ghcr.io/antimatter-studios/docker-dns:latest
     restart: always
     network_mode: bridge
     ports:
-      - 53:53/tcp
       - 53:53/udp

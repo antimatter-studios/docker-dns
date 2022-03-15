@@ -33,7 +33,7 @@ container_add_dns ()
     echo "Updating DNS Resolver to use nameserver with ip address ${yel}'$1'${end}"
     echo "${blu}Note: If you are asked for your password, it means your sudo password${end}"
 
-    echo "nameserver $1 # christhomas_supervisor_dnsmasq_ip_address" | sudo tee -a $resolve_conf
+    echo "nameserver $1 # docker-dns" | sudo tee -a $resolve_conf
     sudo resolvconf -u
 
     echo "Restarting system services after reconfiguration"

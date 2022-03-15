@@ -18,9 +18,8 @@ container_add_dns ()
 
 container_remove_dns ()
 {
-    dns_ip_address="8.8.8.8 8.8.4.4"
-    echo "DNS Servers: ${yel}'${dns_ip_address}'${end}"
-    sudo networksetup -setdnsservers 'Wi-Fi' ${dns_ip_address}
+    echo "DNS Servers: ${yel}Resetting back to router${end}"
+    sudo networksetup -setdnsservers 'Wi-Fi' empty
 }
 
 # Function exports and parameters
