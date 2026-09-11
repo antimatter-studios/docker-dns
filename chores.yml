@@ -1,0 +1,50 @@
+version: "3"
+
+# The everyday commands for this repo, run with `chore <name>`.
+#
+# ddt runs this image as its local DNS server. These tasks build it and prove it answers
+# the way ddt relies on: ddt writes a dnsmasq file per TLD into /etc/dnsmasq.d and sends
+# SIGHUP to PID 1, and the host reaches the container through a published port.
+
+vars:
+  IMAGE: '{{.IMAGE | default "ghcr.io/antimatter-studios/docker-dns:dev"}}'
+  # The smoke test's container and host port, clear of ddt's own ddt-dns on 10053.
+  TEST_CONTAINER: docker-dns-smoke
+  TEST_PORT: '{{.TEST_PORT | default "10153"}}'
+
+tasks:
+  default:
+    cmds:
+      - chore --list
+
+  build:
+    desc: Build the image
+    cmds:
+      - docker build -t {{.IMAGE}} .
+
+  test:
+    desc: Build the image, run it the way ddt does, and check a TLD resolves over UDP and TCP
+    deps: [build]
+    cmds:
+      - defer: docker rm -f {{.TEST_CONTAINER}} >/dev/null 2>&1 || true
+      - docker rm -f {{.TEST_CONTAINER}} >/dev/null 2>&1 || true
+      - docker run -d --name {{.TEST_CONTAINER}} -p 127.0.0.1:{{.TEST_PORT}}:53/udp -p 127.0.0.1:{{.TEST_PORT}}:53/tcp {{.IMAGE}} >/dev/null
+      - docker exec {{.TEST_CONTAINER}} sh -c 'echo "address=/.ddttest/10.254.254.254" > /etc/dnsmasq.d/tld_ddttest.conf'
+      - docker exec {{.TEST_CONTAINER}} kill -s SIGHUP 1
+      # SIGHUP restarts dnsmasq under supervisord, so allow it a moment to come back.
+      - |
+        for proto in udp tcp; do
+          flag=""; [ "$proto" = tcp ] && flag="+tcp"
+          got=""
+          for i in $(seq 1 20); do
+            got=$(dig +short $flag +time=1 +tries=1 @127.0.0.1 -p {{.TEST_PORT}} app.ddttest 2>/dev/null || true)
+            [ "$got" = 10.254.254.254 ] && break
+            sleep 0.5
+          done
+          if [ "$got" != 10.254.254.254 ]; then
+            echo "app.ddttest did not resolve over $proto (got: ${got:-nothing})" >&2
+            docker logs {{.TEST_CONTAINER}} >&2
+            exit 1
+          fi
+          echo "app.ddttest -> $got over $proto"
+        done
