@@ -2,12 +2,10 @@ name: CI
 
 on:
   pull_request:
-  # The merge queue tests each pull request on top of everything queued ahead of it,
-  # and merges only when CI passes there too.
-  merge_group:
-    types: [checks_requested]
   push:
     branches: [main]
+  # merge-on-green starts CI by hand after bringing an out-of-date pull request up to
+  # date, because the update it pushes starts no workflow on its own.
   workflow_dispatch:
 
 # A newer commit on the same branch supersedes the run in progress.
