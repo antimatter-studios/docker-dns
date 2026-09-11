@@ -1,4 +1,6 @@
-FROM alpine:latest
+# A fixed release rather than :latest, so a build is reproducible and Dependabot
+# proposes each upgrade as a pull request that CI tests first.
+FROM alpine:3.24
 
 LABEL MAINTAINER="Chris Thomas <chris.alex.thomas@gmail.com>"
 

@@ -1,18 +1,21 @@
 # docker-dns
-Supervisord controlled DNSMasq allowing updates for domains without modifying the config
 
-This project was born out of a need to run a dnsmasq docker container to resolve hostnames on my docker containers without wanting to constantly edit the system files to make the domains available.  However, I also needed to be able to add more domains on demand, so working with this on a non-specific project could just add its custom domains without having to edit the code, or customise configuration files
+The local DNS server that [ddt](https://github.com/antimatter-studios/docker-dev-tools) runs: dnsmasq under supervisord, answering for the development TLDs ddt configures (for example `*.develop`) and forwarding everything else to your normal DNS servers.
 
-Parameters:
-+ -a: The ip alias for the loopback adapter
-+ -d: The domain to configure
+## Using it
 
-To Start:
-- ./start.sh -a 10.254.254.254 -d api.example.local
+Through ddt, which starts the container, writes a dnsmasq file for each TLD and points your system's resolver at it:
 
-To Stop:
-- ./stop.sh
-- The software must be stopped using the script because it has configured the system to use a nameserver that after the container stops, will no longer be present.  The machine will not be able to correctly resolve hostnames after this point.
+```bash
+ddt dns add-tld develop
+ddt dns start
+```
 
-Future Ideas:
-- Make it possible to configure multiple ip aliases with multiple domains
+## Developing it
+
+```bash
+chore build   # build the image
+chore test    # build it, run it the way ddt does, and check a TLD resolves over UDP and TCP
+```
+
+CI runs `chore test` on every pull request. A pull request merges itself once CI passes, and main is then published to `ghcr.io/antimatter-studios/docker-dns`.
