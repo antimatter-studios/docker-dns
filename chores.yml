@@ -28,6 +28,9 @@ tasks:
     desc: Build the image, run it the way ddt does, and check a TLD resolves over UDP and TCP
     deps: [build]
     cmds:
+      # Every check below asks the container with dig; without it they would all fail
+      # for a reason that has nothing to do with the image.
+      - 'command -v dig >/dev/null || { echo "chore test needs dig (dnsutils on Debian and Ubuntu, bind-tools on Alpine; macOS ships it)" >&2; exit 1; }'
       - defer: docker rm -f {{.TEST_CONTAINER}} >/dev/null 2>&1 || true
       # Docker picks free host ports, so nothing already listening can clash.
       - docker run -d --name {{.TEST_CONTAINER}} -p 127.0.0.1::53/udp -p 127.0.0.1::53/tcp {{.IMAGE}} >/dev/null
