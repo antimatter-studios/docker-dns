@@ -2,6 +2,10 @@ name: CI
 
 on:
   pull_request:
+  # The merge queue tests each pull request on top of everything queued ahead of it,
+  # and merges only when CI passes there too.
+  merge_group:
+    types: [checks_requested]
   push:
     branches: [main]
   workflow_dispatch:
