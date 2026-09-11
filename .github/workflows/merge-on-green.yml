@@ -1,10 +1,12 @@
 name: Merge on green
 
-# Squash-merges a pull request as soon as CI passes on it, then publishes the image.
+# Hands a pull request to the merge queue as soon as CI passes on it.
 #
-# The merge is made with this workflow's token, and GitHub starts no workflows for
-# pushes made with that token, so the Docker workflow would never run for the merged
-# commit. It is started here explicitly instead (workflow_dispatch is the exception).
+# The queue, not this workflow, does the merge: it rebuilds the pull request on top of
+# main and everything queued ahead of it, runs CI on that (the merge_group event), and
+# squash-merges only if it passes. Two pull requests that go green together therefore
+# both land, in turn, instead of the second failing as out of date. The queue's merge
+# is a normal push to main, which starts the Docker workflow that publishes the image.
 on:
   workflow_run:
     workflows: [CI]
@@ -13,7 +15,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  actions: write
 
 jobs:
   merge:
@@ -26,8 +27,7 @@ jobs:
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Merge the pull request
-        id: merge
+      - name: Add the pull request to the merge queue
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -43,12 +43,7 @@ jobs:
             echo "No open, ready pull request into $BASE at $HEAD_SHA."
             exit 0
           fi
-          # Only the commit CI just passed, never one pushed since.
-          gh pr merge "$pr" -R "$REPO" --squash --delete-branch --match-head-commit "$HEAD_SHA"
-          echo "merged=true" >> "$GITHUB_OUTPUT"
-
-      - name: Publish the image
-        if: steps.merge.outputs.merged == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run docker.yml -R "${{ github.repository }}" --ref "${{ github.event.repository.default_branch }}"
+          # Only the commit CI just passed, never one pushed since. With the queue
+          # required, this enqueues rather than merges; the queue squash-merges, and the
+          # repository deletes the branch once it has.
+          gh pr merge "$pr" -R "$REPO" --squash --match-head-commit "$HEAD_SHA"
