@@ -8,9 +8,10 @@ version: "3"
 
 vars:
   IMAGE: '{{.IMAGE | default "ghcr.io/antimatter-studios/docker-dns:dev"}}'
-  # The smoke test's container and host port, clear of ddt's own ddt-dns on 10053.
-  TEST_CONTAINER: docker-dns-smoke
-  TEST_PORT: '{{.TEST_PORT | default "10153"}}'
+  # Named per run, so two runs at once never touch each other's container, and an
+  # unrelated container is never removed because it happens to share a name.
+  TEST_CONTAINER:
+    sh: echo "docker-dns-smoke-$(date +%s)-$$"
 
 tasks:
   default:
@@ -27,17 +28,18 @@ tasks:
     deps: [build]
     cmds:
       - defer: docker rm -f {{.TEST_CONTAINER}} >/dev/null 2>&1 || true
-      - docker rm -f {{.TEST_CONTAINER}} >/dev/null 2>&1 || true
-      - docker run -d --name {{.TEST_CONTAINER}} -p 127.0.0.1:{{.TEST_PORT}}:53/udp -p 127.0.0.1:{{.TEST_PORT}}:53/tcp {{.IMAGE}} >/dev/null
+      # Docker picks free host ports, so nothing already listening can clash.
+      - docker run -d --name {{.TEST_CONTAINER}} -p 127.0.0.1::53/udp -p 127.0.0.1::53/tcp {{.IMAGE}} >/dev/null
       - docker exec {{.TEST_CONTAINER}} sh -c 'echo "address=/.ddttest/10.254.254.254" > /etc/dnsmasq.d/tld_ddttest.conf'
       - docker exec {{.TEST_CONTAINER}} kill -s SIGHUP 1
       # SIGHUP restarts dnsmasq under supervisord, so allow it a moment to come back.
       - |
         for proto in udp tcp; do
           flag=""; [ "$proto" = tcp ] && flag="+tcp"
+          port=$(docker port {{.TEST_CONTAINER}} 53/$proto | head -1 | sed 's/.*://')
           got=""
           for i in $(seq 1 20); do
-            got=$(dig +short $flag +time=1 +tries=1 @127.0.0.1 -p {{.TEST_PORT}} app.ddttest 2>/dev/null || true)
+            got=$(dig +short $flag +time=1 +tries=1 @127.0.0.1 -p "$port" app.ddttest 2>/dev/null || true)
             [ "$got" = 10.254.254.254 ] && break
             sleep 0.5
           done
