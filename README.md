@@ -18,4 +18,6 @@ chore build   # build the image
 chore test    # build it, run it the way ddt does, and check a TLD resolves over UDP and TCP
 ```
 
+`chore test` needs Docker and `dig` (in `dnsutils` on Debian and Ubuntu, `bind-tools` on Alpine; macOS ships it).
+
 CI runs `chore test` on every pull request, and a pull request from a branch in this repository merges itself once CI passes. If another merged first, it is brought up to date with main and CI runs again before it merges. Pull requests from forks are left for a person to merge. main is then published to `ghcr.io/antimatter-studios/docker-dns`.
